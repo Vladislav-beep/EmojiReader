@@ -19,9 +19,35 @@ class EmojiTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         self.title = "Emoji Reader"
         self.navigationItem.leftBarButtonItem = self.editButtonItem
+    }
+    
+    @IBAction func unwindSegue(segue: UIStoryboardSegue) {
+        guard segue.identifier == "saveSegue" else { return }
+        let sourceVC = segue.source as! NewEmijiTableViewController
+        let emoji = sourceVC.emoji
+        
+        if let selectedindexPath = tableView.indexPathForSelectedRow {
+            objects[selectedindexPath.row] = emoji
+            tableView.reloadRows(at: [selectedindexPath] , with: .fade)
+        } else {
+            let newIndexPath = IndexPath(row: objects.count, section: 0)
+            objects.append(emoji)
+            tableView.insertRows(at: [newIndexPath], with: .fade)
+        }
+        
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        super.prepare(for: segue, sender: sender)
+        guard segue.identifier == "editEmoji" else { return }
+        let indexPath = tableView.indexPathForSelectedRow!
+        let emoji = objects[indexPath.row]
+        let navigationVC = segue.destination as! UINavigationController
+        let newEmojiVC = navigationVC.topViewController as! NewEmijiTableViewController
+        newEmojiVC.emoji = emoji
+        newEmojiVC.title = "Editor"
     }
 
     // MARK: - Table view data source
@@ -32,7 +58,6 @@ class EmojiTableViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
         return objects.count
     }
 
@@ -71,7 +96,7 @@ class EmojiTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let done = doneAction(at: indexPath)
         let favourite = favoutiteAction(at: indexPath)
-        return UISwipeActionsConfiguration(actions: [done, favourite ])
+        return UISwipeActionsConfiguration(actions: [done, favourite])
     }
     
     func doneAction(at indexPath: IndexPath) -> UIContextualAction {
